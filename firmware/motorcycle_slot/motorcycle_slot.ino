@@ -41,9 +41,9 @@ static SPIClass epdBus(HSPI);
 
 enum Badge : uint8_t { R7 = 0, R9, TT, HS, JP, BADGE_N };
 
-static const char* kCode[BADGE_N] = {"R7", "R12", "TT", "HS", "JP"};
+static const char* kCode[BADGE_N] = {"R6", "R12", "TT", "HS", "JP"};
 static const char* kName[BADGE_N] = {
-    "Yamaha R7", "BMW R12", "Triumph Thruxton R", "Honda Shadow", "JACKPOT"};
+    "2020 Yamaha R6", "BMW R12", "Triumph Thruxton R", "Honda Shadow", "JACKPOT"};
 static const uint16_t kWeight[BADGE_N] = {W_R7, W_R9, W_TT, W_HS, W_JP};
 static const unsigned char* kBmp[BADGE_N] = {bmp_r7, bmp_r9, bmp_tt, bmp_hs, bmp_jp};
 static const unsigned char* kBmpRed[BADGE_N] = {bmp_r7_red, bmp_r9_red, bmp_tt_red, bmp_hs_red, bmp_jp_red};
@@ -271,7 +271,7 @@ void setup() {
   Serial.println("Motorcycle Slot Machine");
   Serial.printf("JP chance %u/%u\n", W_JP, weightSum());
 #if TEST_MODE
-  Serial.println("s=spin  1=R7 2=R12 3=TT 4=HS  j=jackpot");
+  Serial.println("s=spin  1=R6 2=R12 3=TT 4=HS  j=jackpot");
 #if PANEL_3COLOR
   Serial.println("3-color panel: full refresh is slow, wait for SLOT splash");
 #endif

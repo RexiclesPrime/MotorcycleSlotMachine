@@ -20,7 +20,7 @@
 #define SPIN_WHIRL 1
 #define SPIN_SETTLE 1
 
-// Serial 115200: s = spin, 1-4 = R7/R9/TT/HS, j = jackpot
+// Serial 115200: s = spin, 1-4 = R6/R12/TT/HS, j = jackpot
 #define SERIAL_COMMANDS 1
 
 // 1 = draw the 112x80 side-view sprites in bitmaps.h. 0 = letter codes only.

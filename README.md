@@ -4,7 +4,7 @@ On power-on, an ESP32 spins a three-reel e-ink slot and picks today's bike.
 
 | Code | Bike |
 |------|------|
-| **R7** | Yamaha R7 |
+| **R6** | 2020 Yamaha R6 |
 | **R12** | BMW R12 |
 | **TT** | Triumph Thruxton R |
 | **HS** | Honda Shadow (red bodywork) |

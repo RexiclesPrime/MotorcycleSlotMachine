@@ -79,7 +79,7 @@ This build drives the panel as **black / white / red**. A 3-color refresh can ta
 - **BOOT** — spin again (tap, don’t hold)
 - Serial Monitor at **115200 baud** (`Tools → Serial Monitor`). You should see `land ->` then `done — reels should be stopped`. If it never prints `done`, the panel is still refreshing; wait; a full 4.2" update can take a couple of seconds.
   - `s` spin
-  - `1` `2` `3` `4` force R7 / R12 / TT / HS
+  - `1` `2` `3` `4` force R6 / R12 / TT / HS
   - `j` force jackpot
 
 ## If compile fails

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from collections import Counter
 
-W = (("R7", 49), ("R9", 49), ("TT", 49), ("HS", 49), ("JP", 2))
+W = (("R6", 49), ("R9", 49), ("TT", 49), ("HS", 49), ("JP", 2))
 TOTAL = sum(w for _, w in W)
 
 
@@ -11,7 +11,7 @@ def pick(rng: int) -> str:
         if n < w:
             return name
         n -= w
-    return "R7"
+    return "R6"
 
 
 def main() -> None:
