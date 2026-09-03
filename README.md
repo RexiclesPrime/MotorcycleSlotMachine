@@ -10,7 +10,7 @@ On power-on, an ESP32 spins a three-reel e-ink slot and picks today's bike.
 | **HS** | Honda Shadow |
 | **JP** | Jackpot — *Buy another motorcycle.* |
 
-Bikes are equally likely. Jackpot is about 1% (`2/198`). Reels show 1-bit side-view sprites (112×80) plus the letter code. Sources live in `assets/pixel/`; rebuild with `python tools/png_to_bitmap.py`.
+Bikes are equally likely. Jackpot is about 1% (`2/198`). Reels draw 1-bit side-view sprites (112×80) plus the letter code. Sources live in `assets/pixel/`; rebuild with `python tools/png_to_bitmap.py`.
 
 ## Hardware
 

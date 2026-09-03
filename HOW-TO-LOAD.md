@@ -48,12 +48,12 @@ To confirm GFX is actually there: **Sketch → Include Library** should list **A
 
 ## 4. Open this project and pick the board
 
-1. Get the code: **Code → Download ZIP** on GitHub and unzip it, or `git clone` the repo.
+1. Get a **fresh** copy: GitHub **Code → Download ZIP**, unzip it, and throw away any older `MotorcycleSlotMachine-main` folder. Do not copy one new file into an old sketch folder — `bitmaps.h` has to sit next to the `.ino`.
 2. In Arduino IDE: **File → Open…** and choose
 
    `firmware/motorcycle_slot/motorcycle_slot.ino`
 
-   (Keep that file inside the `motorcycle_slot` folder. Arduino cares about the names matching.)
+   That folder must contain `motorcycle_slot.ino`, `config.h`, and `bitmaps.h`.
 3. **Tools → Board → esp32 → ESP32 Dev Module**
 4. **Tools → Port** → the new COM port that appeared when you plugged the board in.
 
@@ -72,7 +72,7 @@ If it sits on “Connecting…” or fails to sync:
 
 ## 6. What you should see
 
-The screen will flash, then three reels spin and stop on **R7**, **R9**, **TT**, **HS**, or (rarely) **JP**.
+The screen will flash, then three reels spin and stop on a **side-view bike** with a small **R7 / R9 / TT / HS / JP** label. Jackpot is a gift-wrapped bike. If the bikes look inverted (white blobs), set `#define SPRITE_INVERT 1` in `config.h` and upload again.
 
 - **BOOT** — spin again (tap, don’t hold)
 - Serial Monitor at **115200 baud** (`Tools → Serial Monitor`). You should see `land ->` then `done — reels should be stopped`. If it never prints `done`, the panel is still refreshing; wait; a full 4.2" update can take a couple of seconds.

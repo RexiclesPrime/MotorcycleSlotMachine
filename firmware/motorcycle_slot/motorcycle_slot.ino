@@ -81,11 +81,20 @@ static void paintBadge(const Window& win, Badge b) {
   const uint16_t bg = jack ? GxEPD_BLACK : GxEPD_WHITE;
   const uint16_t fg = jack ? GxEPD_WHITE : GxEPD_BLACK;
   epd.fillRect(win.x, win.y, win.w, win.h, bg);
+#if USE_SPRITES
   const int16_t bx = (int16_t)(win.x + (win.w - (int16_t)bmp_r7_w) / 2);
-  const int16_t by = (int16_t)(win.y + (win.h - (int16_t)bmp_r7_h) / 2 - 8);
+  const int16_t by = (int16_t)(win.y + (win.h - (int16_t)bmp_r7_h) / 2 - 10);
+#if SPRITE_INVERT
+  epd.drawInvertedBitmap(bx, by, kBmp[b], bmp_r7_w, bmp_r7_h, fg);
+#else
   epd.drawBitmap(bx, by, kBmp[b], bmp_r7_w, bmp_r7_h, fg);
+#endif
   centerText(kCode[b], (int16_t)(win.x + win.w / 2), (int16_t)(win.y + win.h - 14),
              &FreeSansBold9pt7b, fg);
+#else
+  centerText(kCode[b], (int16_t)(win.x + win.w / 2), (int16_t)(win.y + win.h / 2),
+             &FreeSansBold12pt7b, fg);
+#endif
 }
 
 static void paintChrome(const Badge shown[3], const char* line1, const char* line2) {
@@ -251,8 +260,8 @@ void setup() {
   epd.setRotation(DISPLAY_ROTATION);
   epd.setTextWrap(false);
   layOut();
-  Serial.printf("panel %dx%d  partial=%d fast=%d\n", gW, gH, epd.epd2.hasPartialUpdate,
-                epd.epd2.hasFastPartialUpdate);
+  Serial.printf("panel %dx%d  partial=%d fast=%d  sprites=%d\n", gW, gH, epd.epd2.hasPartialUpdate,
+                epd.epd2.hasFastPartialUpdate, USE_SPRITES);
 
   spinRandom();
 #if !TEST_MODE

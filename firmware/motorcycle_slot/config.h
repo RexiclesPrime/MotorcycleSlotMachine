@@ -20,6 +20,11 @@
 // Serial 115200: s = spin, 1-4 = R7/R9/TT/HS, j = jackpot
 #define SERIAL_COMMANDS 1
 
+// 1 = draw the 112x80 side-view sprites in bitmaps.h. 0 = letter codes only.
+#define USE_SPRITES 1
+// 1 = swap black/white in the sprite (try this if the bikes look like empty outlines or inverted blobs).
+#define SPRITE_INVERT 0
+
 // Four bikes equal. Jackpot is rare. 2/198 ≈ 1.01%.
 #define W_R7 49
 #define W_R9 49
