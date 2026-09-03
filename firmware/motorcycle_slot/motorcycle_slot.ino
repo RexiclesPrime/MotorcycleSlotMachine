@@ -161,10 +161,18 @@ static void layOut() {
   }
 }
 
-static void spinTo(Badge landOn) {
-  disableLoopWDT();
-  disableCore0WDT();
+static void bootSplash() {
+  epd.setFullWindow();
+  epd.firstPage();
+  int pages = 0;
+  do {
+    epd.fillScreen(GxEPD_WHITE);
+    centerText("SLOT", (int16_t)(gW / 2), (int16_t)(gH / 2 - 14), &FreeSansBold12pt7b, GxEPD_BLACK);
+    centerText("sprites on", (int16_t)(gW / 2), (int16_t)(gH / 2 + 14), &FreeSansBold9pt7b, GxEPD_BLACK);
+  } while (epd.nextPage() && ++pages < 4);
+}
 
+static void spinTo(Badge landOn) {
   Badge face[3] = {scramble(), scramble(), scramble()};
 
   Serial.printf("land -> %s  %s\n", kCode[landOn], kName[landOn]);
@@ -251,9 +259,7 @@ void setup() {
   pinMode(PIN_SPIN_BUTTON, INPUT_PULLUP);
 #endif
 
-  disableLoopWDT();
-  disableCore0WDT();
-
+  Serial.println("init display...");
   epdBus.begin(PIN_SCK, PIN_MISO, PIN_MOSI, PIN_CS);
   epd.epd2.selectSPI(epdBus, SPISettings(4000000, MSBFIRST, SPI_MODE0));
   epd.init(115200, true, 50, false);
@@ -263,6 +269,7 @@ void setup() {
   Serial.printf("panel %dx%d  partial=%d fast=%d  sprites=%d\n", gW, gH, epd.epd2.hasPartialUpdate,
                 epd.epd2.hasFastPartialUpdate, USE_SPRITES);
 
+  bootSplash();
   spinRandom();
 #if !TEST_MODE
   nap();

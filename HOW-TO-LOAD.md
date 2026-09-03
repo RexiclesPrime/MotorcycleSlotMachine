@@ -72,7 +72,9 @@ If it sits on “Connecting…” or fails to sync:
 
 ## 6. What you should see
 
-The screen will flash, then three reels spin and stop on a **side-view bike** with a small **R7 / R9 / TT / HS / JP** label. Jackpot is a gift-wrapped bike. If the bikes look inverted (white blobs), set `#define SPRITE_INVERT 1` in `config.h` and upload again.
+First boot of this build should flash a **SLOT / sprites on** splash, then the reels. E-paper keeps the old picture with power off — if you never see that splash, the new sketch did not run (wrong folder, or a crash). Check that Arduino’s sketch tabs include `bitmaps.h`, and that Serial prints `sprites=1`.
+
+If the bikes look inverted (white blobs), set `#define SPRITE_INVERT 1` in `config.h` and upload again.
 
 - **BOOT** — spin again (tap, don’t hold)
 - Serial Monitor at **115200 baud** (`Tools → Serial Monitor`). You should see `land ->` then `done — reels should be stopped`. If it never prints `done`, the panel is still refreshing; wait; a full 4.2" update can take a couple of seconds.
