@@ -10,11 +10,13 @@
 // Native 4.2" is already landscape. Change only if the slot is sideways (1 or 3).
 #define DISPLAY_ROTATION 0
 
-// Stay awake so you can respin from the BOOT button or serial.
-// Set 0 later: one spin, then deep sleep (the image stays on the glass).
-#define TEST_MODE 1
+// 0 = production: one spin, then deep sleep (image stays on the glass).
+// 1 = stay awake; serial commands respin (for bench testing).
+#define TEST_MODE 0
 
-#define PIN_SPIN_BUTTON 0  // BOOT on the driver board. -1 disables.
+// Dedicated spin/wake button to GND. Do not use GPIO0 (BOOT).
+// Waveshare ESP32 driver board: GPIO 32 is on the header. -1 disables.
+#define PIN_SPIN_BUTTON 32
 
 // E-ink frames. Each partial refresh is ~0.5–2s on the 4.2". Keep this tiny.
 #define SPIN_WHIRL 1

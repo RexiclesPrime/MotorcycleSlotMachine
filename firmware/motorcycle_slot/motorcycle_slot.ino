@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <esp_sleep.h>
+#include <driver/rtc_io.h>
 #include <Adafruit_GFX.h>
 #include <Fonts/FreeSansBold9pt7b.h>
 #include <Fonts/FreeSansBold12pt7b.h>
@@ -91,7 +92,7 @@ static void paintBadge(const Window& win, Badge b) {
   epd.fillRect(win.x, win.y, win.w, win.h, bg);
 #if USE_SPRITES
   const int16_t bx = (int16_t)(win.x + (win.w - (int16_t)bmp_r7_w) / 2);
-  const int16_t by = (int16_t)(win.y + (win.h - (int16_t)bmp_r7_h) / 2 - 10);
+  const int16_t by = (int16_t)(win.y + (win.h - (int16_t)bmp_r7_h) / 2);
 #if SPRITE_INVERT
   epd.drawInvertedBitmap(bx, by, kBmp[b], bmp_r7_w, bmp_r7_h, fg);
 #else
@@ -103,8 +104,6 @@ static void paintBadge(const Window& win, Badge b) {
   const uint16_t red = jack ? GxEPD_WHITE : GxEPD_BLACK;
 #endif
   epd.drawBitmap(bx, by, kBmpRed[b], bmp_r7_w, bmp_r7_h, red);
-  centerText(kCode[b], (int16_t)(win.x + win.w / 2), (int16_t)(win.y + win.h - 14),
-             &FreeSansBold9pt7b, fg);
 #else
   centerText(kCode[b], (int16_t)(win.x + win.w / 2), (int16_t)(win.y + win.h / 2),
              &FreeSansBold12pt7b, fg);
@@ -160,10 +159,10 @@ static void layOut() {
   gW = epd.width();
   gH = epd.height();
 
-  const int16_t gap = 10;
-  const int16_t side = 18;
-  const int16_t top = 52;
-  const int16_t bottom = 58;
+  const int16_t gap = 6;
+  const int16_t side = 6;
+  const int16_t top = 44;
+  const int16_t bottom = 50;
   const int16_t rw = (int16_t)((gW - 2 * side - 2 * gap) / 3);
   const int16_t rh = (int16_t)(gH - top - bottom);
 
@@ -190,7 +189,6 @@ static void spinTo(Badge landOn) {
   Badge face[3] = {scramble(), scramble(), scramble()};
 
   Serial.printf("land -> %s  %s\n", kCode[landOn], kName[landOn]);
-  fullFrame(face, "SPINNING", "");
 
   int whirl = SPIN_WHIRL;
   int settle = SPIN_SETTLE;
@@ -203,6 +201,9 @@ static void spinTo(Badge landOn) {
     settle = 0;
   }
 #endif
+  if (whirl > 0 || settle > 0) {
+    fullFrame(face, "SPINNING", "");
+  }
 
   for (int n = 0; n < whirl; n++) {
     face[0] = scramble();
@@ -256,10 +257,13 @@ static void eatSerial() {
 }
 
 static void nap() {
-  Serial.println("sleep — tap BOOT to spin again");
+  Serial.println("sleep — tap the GPIO32 button to spin again");
   epd.hibernate();
 #if PIN_SPIN_BUTTON >= 0
-  pinMode(PIN_SPIN_BUTTON, INPUT_PULLUP);
+  rtc_gpio_init((gpio_num_t)PIN_SPIN_BUTTON);
+  rtc_gpio_set_direction((gpio_num_t)PIN_SPIN_BUTTON, RTC_GPIO_MODE_INPUT_ONLY);
+  rtc_gpio_pullup_en((gpio_num_t)PIN_SPIN_BUTTON);
+  rtc_gpio_pulldown_dis((gpio_num_t)PIN_SPIN_BUTTON);
   esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_SPIN_BUTTON, 0);
 #endif
   esp_deep_sleep_start();
@@ -271,10 +275,12 @@ void setup() {
   Serial.println("Motorcycle Slot Machine");
   Serial.printf("JP chance %u/%u\n", W_JP, weightSum());
 #if TEST_MODE
-  Serial.println("s=spin  1=R6 2=R12 3=TT 4=HS  j=jackpot");
-#if PANEL_3COLOR
-  Serial.println("3-color panel: full refresh is slow, wait for SLOT splash");
+  Serial.println("TEST_MODE: s=spin  1=R6 2=R12 3=TT 4=HS  j=jackpot");
+#else
+  Serial.println("production: one spin, then sleep");
 #endif
+#if PANEL_3COLOR
+  Serial.println("3-color: full refresh 15-20s, wait for TODAY'S RIDE");
 #endif
 
 #if PIN_SPIN_BUTTON >= 0
@@ -291,7 +297,9 @@ void setup() {
   Serial.printf("panel %dx%d  partial=%d fast=%d  sprites=%d  3color=%d\n", gW, gH,
                 epd.epd2.hasPartialUpdate, epd.epd2.hasFastPartialUpdate, USE_SPRITES, PANEL_3COLOR);
 
+#if TEST_MODE
   bootSplash();
+#endif
   spinRandom();
 #if !TEST_MODE
   nap();
@@ -302,7 +310,7 @@ void loop() {
 #if TEST_MODE
   eatSerial();
 
-  // Falling edge only. GPIO0 is BOOT; if it sits low we must not respin forever.
+  // Falling edge only so a stuck pin cannot respin forever.
   static bool bootWasHeld = true;
   const bool held = bootHeld();
   if (held && !bootWasHeld) {

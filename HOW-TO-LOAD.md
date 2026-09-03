@@ -72,15 +72,13 @@ If it sits on “Connecting…” or fails to sync:
 
 ## 6. What you should see
 
-First boot of this build should flash a **SLOT / sprites on** splash, then the reels. E-paper keeps the old picture with power off — if you never see that splash, the new sketch did not run (wrong folder, or a crash). Check that Arduino’s sketch tabs include `bitmaps.h`, and that Serial prints `sprites=1`.
+Production boot: the board spins **once**, draws **TODAY'S RIDE** (or **JACKPOT**), then sleeps. The picture stays with power off. A 3-color refresh can take 15–20 seconds — wait for the footer, not a splash screen.
 
-This build drives the panel as **black / white / red**. A 3-color refresh can take 15–20 seconds — wait for the splash. If the screen goes blank or crazy, your glass is probably black/white only: set `#define PANEL_3COLOR 0` in `config.h` and upload again (red paint will show as black). If the bikes look inverted, set `#define SPRITE_INVERT 1`.
+Optional **spin button**: momentary switch from **GPIO 32** to **GND**. Tap it to wake and spin again. **BOOT is only for flashing**, not for spinning.
 
-- **BOOT** — spin again (tap, don’t hold)
-- Serial Monitor at **115200 baud** (`Tools → Serial Monitor`). You should see `land ->` then `done — reels should be stopped`. If it never prints `done`, the panel is still refreshing; wait; a full 4.2" update can take a couple of seconds.
-  - `s` spin
-  - `1` `2` `3` `4` force R6 / R12 / TT / HS
-  - `j` force jackpot
+If the screen goes blank or crazy, your glass is probably black/white only: set `#define PANEL_3COLOR 0` in `config.h` and upload again. If the bikes look inverted, set `#define SPRITE_INVERT 1`.
+
+Serial **115200**: `land ->` then `done`. To stay awake and force bikes, set `TEST_MODE` to `1` (`s` / `1`–`4` / `j`).
 
 ## If compile fails
 

@@ -10,4 +10,4 @@ Side-view 1-bit sprites for the three reels.
 | `src/hs.jpg` | Honda Shadow (red body) |
 | `src/jp.jpg` | Jackpot (gift-wrapped extra bike) |
 
-`python tools/png_to_bitmap.py` writes `1bit/*.png` and `firmware/motorcycle_slot/bitmaps.h`.
+`python tools/png_to_bitmap.py` writes 128×96 `1bit/*.png` and `firmware/motorcycle_slot/bitmaps.h`.
