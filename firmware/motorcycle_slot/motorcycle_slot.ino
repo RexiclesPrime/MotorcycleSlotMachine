@@ -115,7 +115,7 @@ static void paintChrome(const Badge shown[3], const char* line1, const char* lin
   epd.fillScreen(GxEPD_WHITE);
 
   epd.fillRect(0, 0, gW, 36, GxEPD_BLACK);
-  centerText("WHICH BIKE?", (int16_t)(gW / 2), 18, &FreeSansBold12pt7b, GxEPD_WHITE);
+  centerText("WHICH RIDE?", (int16_t)(gW / 2), 18, &FreeSansBold12pt7b, GxEPD_WHITE);
 
   for (int i = 0; i < 3; i++) {
     const Window& f = gReel[i];
