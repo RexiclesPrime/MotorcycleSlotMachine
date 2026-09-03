@@ -5,10 +5,10 @@ On power-on, an ESP32 spins a three-reel e-ink slot and picks today's bike.
 | Code | Bike |
 |------|------|
 | **R7** | Yamaha R7 |
-| **R9** | BMW R9T |
-| **TT** | Triumph Thruxton |
-| **HS** | Honda Shadow |
-| **JP** | Jackpot — *Buy another motorcycle.* |
+| **R12** | BMW R12 |
+| **TT** | Triumph Thruxton R |
+| **HS** | Honda Shadow (red bodywork) |
+| **JP** | Jackpot — *Buy another motorcycle.* (red bow) |
 
 Bikes are equally likely. Jackpot is about 1% (`2/198`). Reels draw 1-bit side-view sprites (112×80) plus the letter code. Sources live in `assets/pixel/`; rebuild with `python tools/png_to_bitmap.py`.
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Crop motorcycle art to a 1-bit sprite and emit a GxEPD2/Adafruit GFX C array."""
+"""Crop motorcycle art to 1-bit black + red planes for GxEPD2."""
 
 from __future__ import annotations
 
 import os
+
 from PIL import Image
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
@@ -11,10 +12,9 @@ SRC = os.path.join(ROOT, "assets", "pixel", "src")
 OUT_PNG = os.path.join(ROOT, "assets", "pixel", "1bit")
 OUT_HDR = os.path.join(ROOT, "firmware", "motorcycle_slot", "bitmaps.h")
 
-SPRITE_W = 112  # multiple of 8
+SPRITE_W = 112
 SPRITE_H = 80
 
-# (filename without ext, C symbol)
 SPRITES = [
     ("r7", "bmp_r7"),
     ("r9", "bmp_r9"),
@@ -32,41 +32,54 @@ def load_src(stem: str) -> Image.Image:
     raise FileNotFoundError(stem)
 
 
-def ink(rgb: Image.Image, thresh: int = 200) -> Image.Image:
-    """Dark ink on white. 0 = black in the returned mode-L image."""
-    g = rgb.convert("L")
-    return g.point(lambda p: 0 if p < thresh else 255)
+def split_planes(rgb: Image.Image) -> tuple[Image.Image, Image.Image]:
+    """Return (black, red) as mode-L, 0 = ink, 255 = empty."""
+    w, h = rgb.size
+    black = Image.new("L", (w, h), 255)
+    red = Image.new("L", (w, h), 255)
+    bp, rp = black.load(), red.load()
+    px = rgb.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b = px[x, y]
+            if r >= 140 and r >= g + 30 and r >= b + 30:
+                rp[x, y] = 0
+            elif (r + g + b) / 3 < 200:
+                bp[x, y] = 0
+    return black, red
 
 
-def bbox(mask: Image.Image) -> tuple[int, int, int, int]:
-    ext = mask.getbbox()
-    if ext is None:
-        raise RuntimeError("empty mask")
-    return ext
+def union_bbox(black: Image.Image, red: Image.Image) -> tuple[int, int, int, int]:
+    ink = Image.new("L", black.size, 0)
+    ink.paste(255, None, black.point(lambda p: 255 if p < 128 else 0))
+    ink.paste(255, None, red.point(lambda p: 255 if p < 128 else 0))
+    box = ink.getbbox()
+    if box is None:
+        raise RuntimeError("empty sprite")
+    return box
 
 
-def fit_1bit(ink_img: Image.Image) -> Image.Image:
-    # bbox of ink (black)
-    inv = ink_img.point(lambda p: 255 - p)
-    x0, y0, x1, y1 = bbox(inv)
+def fit_pair(black: Image.Image, red: Image.Image) -> tuple[Image.Image, Image.Image]:
+    x0, y0, x1, y1 = union_bbox(black, red)
     pad = 6
     x0 = max(0, x0 - pad)
     y0 = max(0, y0 - pad)
-    x1 = min(ink_img.width, x1 + pad)
-    y1 = min(ink_img.height, y1 + pad)
-    crop = ink_img.crop((x0, y0, x1, y1))
-
-    scale = min(SPRITE_W / crop.width, SPRITE_H / crop.height)
-    nw = max(1, int(crop.width * scale))
-    nh = max(1, int(crop.height * scale))
-    resized = crop.resize((nw, nh), Image.Resampling.NEAREST)
-
-    canvas = Image.new("1", (SPRITE_W, SPRITE_H), 1)  # white
-    bike = resized.convert("1")
+    x1 = min(black.width, x1 + pad)
+    y1 = min(black.height, y1 + pad)
+    bc = black.crop((x0, y0, x1, y1))
+    rc = red.crop((x0, y0, x1, y1))
+    scale = min(SPRITE_W / bc.width, SPRITE_H / bc.height)
+    nw = max(1, int(bc.width * scale))
+    nh = max(1, int(bc.height * scale))
+    br = bc.resize((nw, nh), Image.Resampling.NEAREST).convert("1")
+    rr = rc.resize((nw, nh), Image.Resampling.NEAREST).convert("1")
     ox = (SPRITE_W - nw) // 2
     oy = (SPRITE_H - nh) // 2
-    canvas.paste(bike, (ox, oy))
-    return canvas
+    bout = Image.new("1", (SPRITE_W, SPRITE_H), 1)
+    rout = Image.new("1", (SPRITE_W, SPRITE_H), 1)
+    bout.paste(br, (ox, oy))
+    rout.paste(rr, (ox, oy))
+    return bout, rout
 
 
 def pack_bytes(im: Image.Image) -> list[int]:
@@ -85,56 +98,59 @@ def pack_bytes(im: Image.Image) -> list[int]:
     return out
 
 
-def c_array(name: str, data: list[int], w: int, h: int) -> str:
+def c_array(name: str, data: list[int]) -> str:
     lines = [f"const unsigned char {name}[] PROGMEM = {{"]
     for i in range(0, len(data), 16):
         chunk = ", ".join(f"0x{b:02X}" for b in data[i : i + 16])
         lines.append(f"  {chunk},")
     lines.append("};")
-    lines.append(f"const uint16_t {name}_w = {w};")
-    lines.append(f"const uint16_t {name}_h = {h};")
     return "\n".join(lines)
+
+
+def preview_color(black: Image.Image, red: Image.Image) -> Image.Image:
+    w, h = black.size
+    out = Image.new("RGB", (w, h), (255, 255, 255))
+    op, bp, rp = out.load(), black.load(), red.load()
+    for y in range(h):
+        for x in range(w):
+            if rp[x, y] == 0:
+                op[x, y] = (200, 16, 16)
+            elif bp[x, y] == 0:
+                op[x, y] = (0, 0, 0)
+    return out.resize((w * 4, h * 4), Image.Resampling.NEAREST)
 
 
 def main() -> None:
     os.makedirs(OUT_PNG, exist_ok=True)
-    blocks = []
+    blocks = [
+        "#pragma once",
+        "#include <Arduino.h>",
+        "",
+        "// 112x80 sprites, MSB-left. 1 = ink. bmp_* is black; bmp_*_red is red.",
+        "// Regenerated by tools/png_to_bitmap.py",
+        "",
+        f"const uint16_t bmp_r7_w = {SPRITE_W};",
+        f"const uint16_t bmp_r7_h = {SPRITE_H};",
+        "",
+    ]
     for stem, symbol in SPRITES:
         rgb = load_src(stem)
-        sprite = fit_1bit(ink(rgb))
-        png_path = os.path.join(OUT_PNG, f"{stem}.png")
-        sprite.save(png_path)
-        preview = sprite.convert("L").resize((SPRITE_W * 4, SPRITE_H * 4), Image.Resampling.NEAREST)
-        preview.save(os.path.join(OUT_PNG, f"{stem}_x4.png"))
-        data = pack_bytes(sprite)
-        blocks.append(c_array(symbol, data, SPRITE_W, SPRITE_H))
-        black = sum(1 for p in sprite.getdata() if p == 0)
-        print(f"{stem}: {sprite.size}  black={black}")
+        black, red = fit_pair(*split_planes(rgb))
+        black.save(os.path.join(OUT_PNG, f"{stem}.png"))
+        preview_color(black, red).save(os.path.join(OUT_PNG, f"{stem}_x4.png"))
+        bdata = pack_bytes(black)
+        rdata = pack_bytes(red)
+        blocks.append(c_array(symbol, bdata))
+        blocks.append("")
+        blocks.append(c_array(symbol + "_red", rdata))
+        blocks.append("")
+        bc = sum(1 for p in black.getdata() if p == 0)
+        rc = sum(1 for p in red.getdata() if p == 0)
+        print(f"{stem}: black={bc} red={rc}")
 
-    header = """#pragma once
-#include <Arduino.h>
-#include <avr/pgmspace.h>
-
-// 1-bit side-view sprites, 112x80, MSB-left. 1 = black.
-// Regenerated by tools/png_to_bitmap.py
-
-#ifdef ESP32
-#include <pgmspace.h>
-#endif
-
-"""
-    # ESP32 Arduino uses pgmspace.h from pgmspace, not avr. Avoid avr include.
-    header = """#pragma once
-#include <Arduino.h>
-
-// 1-bit side-view sprites, 112x80, MSB-left. 1 = black.
-// Regenerated by tools/png_to_bitmap.py
-
-"""
-    text = header + "\n\n".join(blocks) + "\n"
     os.makedirs(os.path.dirname(OUT_HDR), exist_ok=True)
     with open(OUT_HDR, "w", encoding="ascii", newline="\n") as f:
-        f.write(text)
+        f.write("\n".join(blocks))
     print("wrote", OUT_HDR)
 
 

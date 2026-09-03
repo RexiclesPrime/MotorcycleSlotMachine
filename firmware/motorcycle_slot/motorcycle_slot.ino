@@ -10,8 +10,12 @@
 #include <Fonts/FreeSansBold12pt7b.h>
 
 #define ENABLE_GxEPD2_GFX 0
-#include <GxEPD2_BW.h>
 #include "config.h"
+#if PANEL_3COLOR
+#include <GxEPD2_3C.h>
+#else
+#include <GxEPD2_BW.h>
+#endif
 #include "bitmaps.h"
 
 // Driver board FPC: CS 15, DC 27, RST 26, BUSY 25, SCK 13, MOSI 14 (HSPI, SCK/MOSI swapped vs default).
@@ -23,22 +27,26 @@ static const int PIN_SCK = 13;
 static const int PIN_MISO = 12;
 static const int PIN_MOSI = 14;
 
-#if WEACT_PANEL_ALT
+#if PANEL_3COLOR
+using Panel = GxEPD2_420c_GDEY042Z98;
+static GxEPD2_3C<Panel, Panel::HEIGHT> epd(Panel(PIN_CS, PIN_DC, PIN_RST, PIN_BUSY));
+#elif WEACT_PANEL_ALT
 using Panel = GxEPD2_420_GYE042A87;
+static GxEPD2_BW<Panel, Panel::HEIGHT> epd(Panel(PIN_CS, PIN_DC, PIN_RST, PIN_BUSY));
 #else
 using Panel = GxEPD2_420_GDEY042T81;
-#endif
-
 static GxEPD2_BW<Panel, Panel::HEIGHT> epd(Panel(PIN_CS, PIN_DC, PIN_RST, PIN_BUSY));
+#endif
 static SPIClass epdBus(HSPI);
 
 enum Badge : uint8_t { R7 = 0, R9, TT, HS, JP, BADGE_N };
 
-static const char* kCode[BADGE_N] = {"R7", "R9", "TT", "HS", "JP"};
+static const char* kCode[BADGE_N] = {"R7", "R12", "TT", "HS", "JP"};
 static const char* kName[BADGE_N] = {
-    "Yamaha R7", "BMW R9T", "Triumph Thruxton", "Honda Shadow", "JACKPOT"};
+    "Yamaha R7", "BMW R12", "Triumph Thruxton R", "Honda Shadow", "JACKPOT"};
 static const uint16_t kWeight[BADGE_N] = {W_R7, W_R9, W_TT, W_HS, W_JP};
 static const unsigned char* kBmp[BADGE_N] = {bmp_r7, bmp_r9, bmp_tt, bmp_hs, bmp_jp};
+static const unsigned char* kBmpRed[BADGE_N] = {bmp_r7_red, bmp_r9_red, bmp_tt_red, bmp_hs_red, bmp_jp_red};
 
 struct Window {
   int16_t x, y, w, h;
@@ -89,6 +97,12 @@ static void paintBadge(const Window& win, Badge b) {
 #else
   epd.drawBitmap(bx, by, kBmp[b], bmp_r7_w, bmp_r7_h, fg);
 #endif
+#if PANEL_3COLOR
+  const uint16_t red = GxEPD_RED;
+#else
+  const uint16_t red = jack ? GxEPD_WHITE : GxEPD_BLACK;
+#endif
+  epd.drawBitmap(bx, by, kBmpRed[b], bmp_r7_w, bmp_r7_h, red);
   centerText(kCode[b], (int16_t)(win.x + win.w / 2), (int16_t)(win.y + win.h - 14),
              &FreeSansBold9pt7b, fg);
 #else
@@ -180,10 +194,15 @@ static void spinTo(Badge landOn) {
 
   int whirl = SPIN_WHIRL;
   int settle = SPIN_SETTLE;
+#if PANEL_3COLOR
+  whirl = 0;
+  settle = 0;
+#else
   if (!epd.epd2.hasPartialUpdate) {
     whirl = 0;
     settle = 0;
   }
+#endif
 
   for (int n = 0; n < whirl; n++) {
     face[0] = scramble();
@@ -252,7 +271,10 @@ void setup() {
   Serial.println("Motorcycle Slot Machine");
   Serial.printf("JP chance %u/%u\n", W_JP, weightSum());
 #if TEST_MODE
-  Serial.println("s=spin  1=R7 2=R9 3=TT 4=HS  j=jackpot");
+  Serial.println("s=spin  1=R7 2=R12 3=TT 4=HS  j=jackpot");
+#if PANEL_3COLOR
+  Serial.println("3-color panel: full refresh is slow, wait for SLOT splash");
+#endif
 #endif
 
 #if PIN_SPIN_BUTTON >= 0
@@ -266,8 +288,8 @@ void setup() {
   epd.setRotation(DISPLAY_ROTATION);
   epd.setTextWrap(false);
   layOut();
-  Serial.printf("panel %dx%d  partial=%d fast=%d  sprites=%d\n", gW, gH, epd.epd2.hasPartialUpdate,
-                epd.epd2.hasFastPartialUpdate, USE_SPRITES);
+  Serial.printf("panel %dx%d  partial=%d fast=%d  sprites=%d  3color=%d\n", gW, gH,
+                epd.epd2.hasPartialUpdate, epd.epd2.hasFastPartialUpdate, USE_SPRITES, PANEL_3COLOR);
 
   bootSplash();
   spinRandom();

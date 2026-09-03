@@ -1,7 +1,10 @@
 #pragma once
 
 // WeAct 4.2" (400x300, SSD1683) on an ESP32 e-Paper Driver Board.
-// 0 = GDEY042T81 (WeAct's usual driver). 1 = GYE042A87 if the picture is blank or inverted.
+// 1 = black/white/RED glass (GDEY042Z98). Needed to actually see red paint/bow.
+// 0 = black/white only (GDEY042T81). Use this if the screen goes blank or crazy.
+#define PANEL_3COLOR 1
+// Only used when PANEL_3COLOR is 0. 1 = GYE042A87 if the BW picture is blank or inverted.
 #define WEACT_PANEL_ALT 0
 
 // Native 4.2" is already landscape. Change only if the slot is sideways (1 or 3).
