@@ -74,8 +74,8 @@ If it sits on “Connecting…” or fails to sync:
 
 The screen will flash, then three reels spin and stop on **R7**, **R9**, **TT**, **HS**, or (rarely) **JP**.
 
-- **BOOT** — spin again
-- Serial Monitor at **115200 baud** (`Tools → Serial Monitor`):
+- **BOOT** — spin again (tap, don’t hold)
+- Serial Monitor at **115200 baud** (`Tools → Serial Monitor`). You should see `land ->` then `done — reels should be stopped`. If it never prints `done`, the panel is still refreshing; wait; a full 4.2" update can take a couple of seconds.
   - `s` spin
   - `1` `2` `3` `4` force R7 / R9 / TT / HS
   - `j` force jackpot

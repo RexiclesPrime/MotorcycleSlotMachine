@@ -112,9 +112,10 @@ static void paintChrome(const Badge shown[3], const char* line1, const char* lin
 static void fullFrame(const Badge shown[3], const char* line1, const char* line2) {
   epd.setFullWindow();
   epd.firstPage();
+  int pages = 0;
   do {
     paintChrome(shown, line1, line2);
-  } while (epd.nextPage());
+  } while (epd.nextPage() && ++pages < 4);
 }
 
 static void flipReels(const Badge shown[3]) {
@@ -124,10 +125,12 @@ static void flipReels(const Badge shown[3]) {
   const int16_t h = gReel[0].h;
   epd.setPartialWindow(x, y, w, h);
   epd.firstPage();
+  int pages = 0;
   do {
     epd.fillScreen(GxEPD_WHITE);
     for (int i = 0; i < 3; i++) paintBadge(gReel[i], shown[i]);
-  } while (epd.nextPage());
+  } while (epd.nextPage() && ++pages < 4);
+  delay(1);
 }
 
 static void layOut() {
@@ -150,17 +153,17 @@ static void layOut() {
 }
 
 static void spinTo(Badge landOn) {
+  disableLoopWDT();
+  disableCore0WDT();
+
   Badge face[3] = {scramble(), scramble(), scramble()};
 
   Serial.printf("land -> %s  %s\n", kCode[landOn], kName[landOn]);
   fullFrame(face, "SPINNING", "");
 
-  int whirl = 3;
-  int settle = 1;
-  if (epd.epd2.hasFastPartialUpdate) {
-    whirl = 6;
-    settle = 2;
-  } else if (!epd.epd2.hasPartialUpdate) {
+  int whirl = SPIN_WHIRL;
+  int settle = SPIN_SETTLE;
+  if (!epd.epd2.hasPartialUpdate) {
     whirl = 0;
     settle = 0;
   }
@@ -169,6 +172,7 @@ static void spinTo(Badge landOn) {
     face[0] = scramble();
     face[1] = scramble();
     face[2] = scramble();
+    Serial.printf("whirl %d\n", n);
     flipReels(face);
   }
   face[0] = landOn;
@@ -189,6 +193,7 @@ static void spinTo(Badge landOn) {
   } else {
     fullFrame(face, "TODAY'S RIDE", kName[landOn]);
   }
+  Serial.println("done — reels should be stopped");
 }
 
 static void spinRandom() { spinTo(pickBadge(esp_random())); }
@@ -237,6 +242,9 @@ void setup() {
   pinMode(PIN_SPIN_BUTTON, INPUT_PULLUP);
 #endif
 
+  disableLoopWDT();
+  disableCore0WDT();
+
   epdBus.begin(PIN_SCK, PIN_MISO, PIN_MOSI, PIN_CS);
   epd.epd2.selectSPI(epdBus, SPISettings(4000000, MSBFIRST, SPI_MODE0));
   epd.init(115200, true, 50, false);
@@ -256,14 +264,15 @@ void loop() {
 #if TEST_MODE
   eatSerial();
 
-  if (bootHeld()) {
-    delay(40);
-    if (bootHeld()) {
-      uint32_t t = millis();
-      while (bootHeld() && millis() - t < 1500) delay(10);
-      spinRandom();
-    }
+  // Falling edge only. GPIO0 is BOOT; if it sits low we must not respin forever.
+  static bool bootWasHeld = true;
+  const bool held = bootHeld();
+  if (held && !bootWasHeld) {
+    uint32_t t = millis();
+    while (bootHeld() && millis() - t < 1500) delay(10);
+    spinRandom();
   }
+  bootWasHeld = held;
   delay(20);
 #else
   delay(1000);

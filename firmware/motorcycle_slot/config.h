@@ -13,6 +13,10 @@
 
 #define PIN_SPIN_BUTTON 0  // BOOT on the driver board. -1 disables.
 
+// E-ink frames. Each partial refresh is ~0.5–2s on the 4.2". Keep this tiny.
+#define SPIN_WHIRL 1
+#define SPIN_SETTLE 1
+
 // Serial 115200: s = spin, 1-4 = R7/R9/TT/HS, j = jackpot
 #define SERIAL_COMMANDS 1
 
