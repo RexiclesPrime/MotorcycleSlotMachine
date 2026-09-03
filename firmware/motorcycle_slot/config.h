@@ -15,8 +15,8 @@
 #define TEST_MODE 0
 
 // Dedicated spin/wake button to GND. Do not use GPIO0 (BOOT).
-// Waveshare ESP32 driver board: GPIO 32 is on the header. -1 disables.
-#define PIN_SPIN_BUTTON 32
+// Waveshare ESP32 driver board: IO4 is on the header and is RTC-capable.
+#define PIN_SPIN_BUTTON 4
 
 // E-ink frames. Each partial refresh is ~0.5–2s on the 4.2". Keep this tiny.
 #define SPIN_WHIRL 1

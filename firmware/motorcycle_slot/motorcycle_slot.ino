@@ -257,7 +257,7 @@ static void eatSerial() {
 }
 
 static void nap() {
-  Serial.println("sleep — tap the GPIO32 button to spin again");
+  Serial.println("sleep — tap the GPIO4 button to spin again");
   epd.hibernate();
 #if PIN_SPIN_BUTTON >= 0
   rtc_gpio_init((gpio_num_t)PIN_SPIN_BUTTON);

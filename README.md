@@ -10,7 +10,7 @@ On power-on, an ESP32 spins a three-reel e-ink slot and picks today's bike.
 | **HS** | Honda Shadow (red bodywork) |
 | **JP** | Jackpot — *Buy another motorcycle.* (red bow) |
 
-Bikes are equally likely. Jackpot is about 1% (`2/198`). Reels draw 128×96 side-view sprites. Power-on spins once, then the ESP32 sleeps; tap a button on **GPIO 32** (to GND) to spin again. Sources live in `assets/pixel/`; rebuild with `python tools/png_to_bitmap.py`.
+Bikes are equally likely. Jackpot is about 1% (`2/198`). Reels draw 128×96 side-view sprites. Power-on spins once, then the ESP32 sleeps; tap a button on **GPIO 4** (to GND) to spin again. Wall case: `hardware/enclosure/`. Sources live in `assets/pixel/`; rebuild with `python tools/png_to_bitmap.py`.
 
 ## Hardware
 

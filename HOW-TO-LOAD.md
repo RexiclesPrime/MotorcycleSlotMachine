@@ -74,7 +74,7 @@ If it sits on “Connecting…” or fails to sync:
 
 Production boot: the board spins **once**, draws **TODAY'S RIDE** (or **JACKPOT**), then sleeps. The picture stays with power off. A 3-color refresh can take 15–20 seconds — wait for the footer, not a splash screen.
 
-Optional **spin button**: momentary switch from **GPIO 32** to **GND**. Tap it to wake and spin again. **BOOT is only for flashing**, not for spinning.
+Optional **spin button**: 16 mm momentary switch from **GPIO 4 (IO4)** to **GND**. Tap it to wake and spin again. **BOOT is only for flashing**, not for spinning. See `hardware/enclosure/` for the wall case.
 
 If the screen goes blank or crazy, your glass is probably black/white only: set `#define PANEL_3COLOR 0` in `config.h` and upload again. If the bikes look inverted, set `#define SPRITE_INVERT 1`.
 
