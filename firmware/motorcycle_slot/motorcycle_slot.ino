@@ -1,19 +1,18 @@
 // Motorcycle Slot Machine
 // WeAct 4.2" e-paper (400x300, SSD1683) + ESP32 e-Paper Driver Board.
 // On power-up the reels spin and land on today's bike (or a jackpot).
-// Reel labels are letter codes until side-view pixel art is added.
 
 #include <Arduino.h>
 #include <SPI.h>
 #include <esp_sleep.h>
+#include <Adafruit_GFX.h>
 #include <Fonts/FreeSansBold9pt7b.h>
 #include <Fonts/FreeSansBold12pt7b.h>
-#include <Fonts/FreeSansBold18pt7b.h>
-#include <Fonts/FreeSansBold24pt7b.h>
 
 #define ENABLE_GxEPD2_GFX 0
 #include <GxEPD2_BW.h>
 #include "config.h"
+#include "bitmaps.h"
 
 // Driver board FPC: CS 15, DC 27, RST 26, BUSY 25, SCK 13, MOSI 14 (HSPI, SCK/MOSI swapped vs default).
 static const int PIN_CS = 15;
@@ -39,6 +38,7 @@ static const char* kCode[BADGE_N] = {"R7", "R9", "TT", "HS", "JP"};
 static const char* kName[BADGE_N] = {
     "Yamaha R7", "BMW R9T", "Triumph Thruxton", "Honda Shadow", "JACKPOT"};
 static const uint16_t kWeight[BADGE_N] = {W_R7, W_R9, W_TT, W_HS, W_JP};
+static const unsigned char* kBmp[BADGE_N] = {bmp_r7, bmp_r9, bmp_tt, bmp_hs, bmp_jp};
 
 struct Window {
   int16_t x, y, w, h;
@@ -78,9 +78,14 @@ static void centerText(const char* s, int16_t cx, int16_t cy, const GFXfont* fon
 
 static void paintBadge(const Window& win, Badge b) {
   const bool jack = (b == JP);
-  epd.fillRect(win.x, win.y, win.w, win.h, jack ? GxEPD_BLACK : GxEPD_WHITE);
-  centerText(kCode[b], (int16_t)(win.x + win.w / 2), (int16_t)(win.y + win.h / 2),
-             &FreeSansBold24pt7b, jack ? GxEPD_WHITE : GxEPD_BLACK);
+  const uint16_t bg = jack ? GxEPD_BLACK : GxEPD_WHITE;
+  const uint16_t fg = jack ? GxEPD_WHITE : GxEPD_BLACK;
+  epd.fillRect(win.x, win.y, win.w, win.h, bg);
+  const int16_t bx = (int16_t)(win.x + (win.w - (int16_t)bmp_r7_w) / 2);
+  const int16_t by = (int16_t)(win.y + (win.h - (int16_t)bmp_r7_h) / 2 - 8);
+  epd.drawBitmap(bx, by, kBmp[b], bmp_r7_w, bmp_r7_h, fg);
+  centerText(kCode[b], (int16_t)(win.x + win.w / 2), (int16_t)(win.y + win.h - 14),
+             &FreeSansBold9pt7b, fg);
 }
 
 static void paintChrome(const Badge shown[3], const char* line1, const char* line2) {

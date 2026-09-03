@@ -34,13 +34,17 @@ Then plug the driver board into the computer with USB. A power LED should light.
 
 ## 3. Install the three libraries
 
-**Sketch → Include Library → Manage Libraries…** and install each of these (accept any “install dependencies” prompt):
+This step is required. Installing only GxEPD2 is not enough — the fonts live in Adafruit GFX.
 
-| Library | Author |
-|---------|--------|
-| **GxEPD2** | Jean-Marc Zingg |
-| **Adafruit GFX Library** | Adafruit |
-| **Adafruit BusIO** | Adafruit |
+**Sketch → Include Library → Manage Libraries…** Search each name below, click **Install**, and accept **Install all** if it asks for dependencies.
+
+| Search for | Author to pick |
+|------------|----------------|
+| `GxEPD2` | Jean-Marc Zingg |
+| `Adafruit GFX Library` | Adafruit |
+| `Adafruit BusIO` | Adafruit |
+
+To confirm GFX is actually there: **Sketch → Include Library** should list **Adafruit GFX Library**. If it does not, install it again (close and reopen the Library Manager if the list looks stale).
 
 ## 4. Open this project and pick the board
 
@@ -75,6 +79,16 @@ The screen will flash, then three reels spin and stop on **R7**, **R9**, **TT**,
   - `s` spin
   - `1` `2` `3` `4` force R7 / R9 / TT / HS
   - `j` force jackpot
+
+## If compile fails
+
+**`Fonts/FreeSansBold9pt7b.h: No such file or directory`**
+
+Adafruit GFX is missing. Repeat section 3 and install **Adafruit GFX Library** by Adafruit (and **Adafruit BusIO** if prompted). Then **Sketch → Verify/Compile** again. Restart Arduino IDE if it still cannot see the library.
+
+**`GxEPD2_BW.h: No such file or directory`**
+
+Install **GxEPD2** by Jean-Marc Zingg.
 
 ## If the screen stays blank
 
