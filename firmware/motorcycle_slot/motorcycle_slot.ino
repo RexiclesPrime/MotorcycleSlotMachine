@@ -124,10 +124,10 @@ static void paintChrome(const Badge shown[3], const char* line1, const char* lin
   }
 
   if (line1 && line1[0]) {
-    centerText(line1, (int16_t)(gW / 2), (int16_t)(gH - 40), &FreeSansBold12pt7b, GxEPD_BLACK);
+    centerText(line1, (int16_t)(gW / 2), (int16_t)(gH - 32), &FreeSansBold12pt7b, GxEPD_BLACK);
   }
   if (line2 && line2[0]) {
-    centerText(line2, (int16_t)(gW / 2), (int16_t)(gH - 18), &FreeSansBold9pt7b, GxEPD_BLACK);
+    centerText(line2, (int16_t)(gW / 2), (int16_t)(gH - 12), &FreeSansBold9pt7b, GxEPD_BLACK);
   }
 }
 
@@ -162,7 +162,7 @@ static void layOut() {
   const int16_t gap = 6;
   const int16_t side = 6;
   const int16_t top = 44;
-  const int16_t bottom = 50;
+  const int16_t bottom = 58;
   const int16_t rw = (int16_t)((gW - 2 * side - 2 * gap) / 3);
   const int16_t rh = (int16_t)(gH - top - bottom);
 
