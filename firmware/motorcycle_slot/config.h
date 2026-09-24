@@ -1,10 +1,19 @@
 #pragma once
 
-// WeAct 4.2" (400x300, SSD1683) on an ESP32 e-Paper Driver Board.
-// 1 = black/white/RED glass (GDEY042Z98). Needed to actually see red paint/bow.
-// 0 = black/white only (GDEY042T81). Use this if the screen goes blank or crazy.
-#define PANEL_3COLOR 1
-// Only used when PANEL_3COLOR is 0. 1 = GYE042A87 if the BW picture is blank or inverted.
+// WeAct 4.2" (400x300) on an ESP32 e-Paper Driver Board.
+//
+// Glass switch:
+//   3 = black / white / red (GDEY042Z98). The panel on the bench.
+//       Lands on the result. This glass cannot partial-refresh, so the
+//       reels do not animate.
+//   2 = black / white (GDEY042T81). The next batch of panels.
+//       Reels spin, then settle.
+#define PANEL_COLORS 3
+#if (PANEL_COLORS != 2) && (PANEL_COLORS != 3)
+#error PANEL_COLORS must be 2 or 3
+#endif
+// Only used when PANEL_COLORS is 2. Set to 1 (GYE042A87) if that
+// black-and-white picture is blank or inverted.
 #define WEACT_PANEL_ALT 0
 
 // Native 4.2" is already landscape. Change only if the slot is sideways (1 or 3).
@@ -25,7 +34,7 @@
 // Serial 115200: s = spin, 1-4 = R6/R12/TT/HS, j = jackpot
 #define SERIAL_COMMANDS 1
 
-// 1 = draw the 112x80 side-view sprites in bitmaps.h. 0 = letter codes only.
+// 1 = draw the 128x96 side-view sprites in bitmaps.h. 0 = letter codes only.
 #define USE_SPRITES 1
 // 1 = swap black/white in the sprite (try this if the bikes look like empty outlines or inverted blobs).
 #define SPRITE_INVERT 0

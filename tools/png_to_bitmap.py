@@ -32,6 +32,24 @@ def load_src(stem: str) -> Image.Image:
     raise FileNotFoundError(stem)
 
 
+def load_authored(stem: str) -> tuple[Image.Image, Image.Image] | None:
+    """Use src/<stem>.sprite.png as the finished 128x96 reel art.
+
+    RGB: black ink, red ink, white paper. Skips the photo threshold, which
+    turns a dark bike into a solid blob.
+    """
+    path = os.path.join(SRC, f"{stem}.sprite.png")
+    if not os.path.isfile(path):
+        return None
+    rgb = Image.open(path).convert("RGB")
+    if rgb.size != (SPRITE_W, SPRITE_H):
+        raise SystemExit(
+            f"{path} is {rgb.size[0]}x{rgb.size[1]}, expected {SPRITE_W}x{SPRITE_H}"
+        )
+    black, red = split_planes(rgb)
+    return black.convert("1"), red.convert("1")
+
+
 def split_planes(rgb: Image.Image) -> tuple[Image.Image, Image.Image]:
     """Return (black, red) as mode-L, 0 = ink, 255 = empty."""
     w, h = rgb.size
@@ -134,8 +152,12 @@ def main() -> None:
         "",
     ]
     for stem, symbol in SPRITES:
-        rgb = load_src(stem)
-        black, red = fit_pair(*split_planes(rgb))
+        authored = load_authored(stem)
+        if authored is not None:
+            black, red = authored
+        else:
+            rgb = load_src(stem)
+            black, red = fit_pair(*split_planes(rgb))
         black.save(os.path.join(OUT_PNG, f"{stem}.png"))
         preview_color(black, red).save(os.path.join(OUT_PNG, f"{stem}_x4.png"))
         bdata = pack_bytes(black)

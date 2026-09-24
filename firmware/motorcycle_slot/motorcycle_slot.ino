@@ -1,6 +1,7 @@
 // Motorcycle Slot Machine
 // WeAct 4.2" e-paper (400x300, SSD1683) + ESP32 e-Paper Driver Board.
-// On power-up the reels spin and land on today's bike (or a jackpot).
+// On power-up, pick today's bike (or a jackpot).
+// PANEL_COLORS 3 lands on the result. PANEL_COLORS 2 spins, then settles.
 
 #include <Arduino.h>
 #include <SPI.h>
@@ -12,7 +13,7 @@
 
 #define ENABLE_GxEPD2_GFX 0
 #include "config.h"
-#if PANEL_3COLOR
+#if PANEL_COLORS == 3
 #include <GxEPD2_3C.h>
 #else
 #include <GxEPD2_BW.h>
@@ -28,7 +29,7 @@ static const int PIN_SCK = 13;
 static const int PIN_MISO = 12;
 static const int PIN_MOSI = 14;
 
-#if PANEL_3COLOR
+#if PANEL_COLORS == 3
 using Panel = GxEPD2_420c_GDEY042Z98;
 static GxEPD2_3C<Panel, Panel::HEIGHT> epd(Panel(PIN_CS, PIN_DC, PIN_RST, PIN_BUSY));
 #elif WEACT_PANEL_ALT
@@ -71,6 +72,8 @@ static Badge pickBadge(uint32_t rng) {
   return R7;
 }
 
+// Jackpot is included on purpose. On a 2-color panel, a black card
+// during the whirl is a fake-out before the real result lands.
 static Badge scramble() {
   return (Badge)(esp_random() % BADGE_N);
 }
@@ -98,7 +101,7 @@ static void paintBadge(const Window& win, Badge b) {
 #else
   epd.drawBitmap(bx, by, kBmp[b], bmp_r7_w, bmp_r7_h, fg);
 #endif
-#if PANEL_3COLOR
+#if PANEL_COLORS == 3
   const uint16_t red = GxEPD_RED;
 #else
   const uint16_t red = jack ? GxEPD_WHITE : GxEPD_BLACK;
@@ -192,7 +195,8 @@ static void spinTo(Badge landOn) {
 
   int whirl = SPIN_WHIRL;
   int settle = SPIN_SETTLE;
-#if PANEL_3COLOR
+#if PANEL_COLORS == 3
+  // Black/white/red glass cannot partial-refresh. Land on the result.
   whirl = 0;
   settle = 0;
 #else
@@ -279,8 +283,10 @@ void setup() {
 #else
   Serial.println("production: one spin, then sleep");
 #endif
-#if PANEL_3COLOR
-  Serial.println("3-color: full refresh 15-20s, wait for TODAY'S RIDE");
+#if PANEL_COLORS == 3
+  Serial.println("3-color: landing on the result, full refresh 15-20s");
+#else
+  Serial.println("2-color: reels will spin");
 #endif
 
 #if PIN_SPIN_BUTTON >= 0
@@ -294,8 +300,8 @@ void setup() {
   epd.setRotation(DISPLAY_ROTATION);
   epd.setTextWrap(false);
   layOut();
-  Serial.printf("panel %dx%d  partial=%d fast=%d  sprites=%d  3color=%d\n", gW, gH,
-                epd.epd2.hasPartialUpdate, epd.epd2.hasFastPartialUpdate, USE_SPRITES, PANEL_3COLOR);
+  Serial.printf("panel %dx%d  partial=%d fast=%d  sprites=%d  colors=%d\n", gW, gH,
+                epd.epd2.hasPartialUpdate, epd.epd2.hasFastPartialUpdate, USE_SPRITES, PANEL_COLORS);
 
 #if TEST_MODE
   bootSplash();
