@@ -72,11 +72,14 @@ If it sits on “Connecting…” or fails to sync:
 
 ## 6. What you should see
 
-Production boot: the board spins **once**, draws **TODAY'S RIDE** (or **JACKPOT**), then sleeps. The picture stays with power off. A 3-color refresh can take 15–20 seconds — wait for the footer, not a splash screen.
+Production boot depends on `PANEL_COLORS` in `firmware/motorcycle_slot/config.h`. The picture stays with the power off either way.
 
-Optional **spin button**: 16 mm momentary switch from **GPIO 4 (IO4)** to **GND**. Tap it to wake and spin again. **BOOT is only for flashing**, not for spinning. See `hardware/enclosure/` for the wall case.
+- **`3`** (black/white/red, the default): the board lands on **TODAY'S RIDE** (or **JACKPOT**), then sleeps. The reels do not animate. A refresh takes 15–20 seconds — wait for the footer, not a splash screen.
+- **`2`** (black/white): the reels spin once, draw the same footer, then sleep.
 
-If the screen goes blank or crazy, your glass is probably black/white only: set `#define PANEL_3COLOR 0` in `config.h` and upload again. If the bikes look inverted, set `#define SPRITE_INVERT 1`.
+Optional **spin button**: 16 mm momentary switch from **GPIO 4 (IO4)** to **GND**. Tap it to wake and roll again. **BOOT is only for flashing**, not for spinning. See `hardware/enclosure/` for the wall case.
+
+If you fit a 2-color panel and the screen goes blank or crazy, set `#define PANEL_COLORS 2` in `config.h` and upload again. If the bikes look inverted, set `#define SPRITE_INVERT 1`.
 
 Serial **115200**: `land ->` then `done`. To stay awake and force bikes, set `TEST_MODE` to `1` (`s` / `1`–`4` / `j`).
 
@@ -95,7 +98,8 @@ Install **GxEPD2** by Jean-Marc Zingg.
 Work down this list. Change **one** thing at a time, then upload again.
 
 1. Ribbon fully seated, latch closed, switch on **A**.
-2. Open `firmware/motorcycle_slot/config.h` and set `#define WEACT_PANEL_ALT 1`
-3. Still blank: try the switch on **B**.
-4. Picture is there but sideways: set `#define DISPLAY_ROTATION 1` (then `3` if needed).
-5. Picture is inverted or garbage: `WEACT_PANEL_ALT` the other way (`0` or `1`).
+2. `PANEL_COLORS` matches the glass: `3` for black/white/red, `2` for black/white.
+3. On a 2-color panel that is still blank, set `#define WEACT_PANEL_ALT 1`.
+4. Still blank: try the display switch on **B**.
+5. Picture is there but sideways: set `#define DISPLAY_ROTATION 1` (then `3` if needed).
+6. Picture is inverted or garbage: `WEACT_PANEL_ALT` the other way (`0` or `1`).

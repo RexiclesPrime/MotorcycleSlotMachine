@@ -51,4 +51,4 @@ Leave the ESP32’s own USB for firmware, accessed through the side window or by
 5. Screw the back on with **M3×12**. Do not pinch the glass; the foam should just kiss the border.
 6. Hang on two #8 pan-head screws, 60 mm apart, 14 mm down from the top.
 
-Power on: wait 15–20 s for **TODAY'S RIDE**. Tap **SPIN** to wake and roll again.
+Power on: 3-color glass takes 15–20 s to land on **TODAY'S RIDE**. 2-color glass spins the reels, then shows the same line. Tap **SPIN** to wake and roll again. The glass switch is `PANEL_COLORS` in `firmware/motorcycle_slot/config.h`.
